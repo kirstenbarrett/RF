@@ -76,19 +76,30 @@ rm(ID, no)
 newDf$d<-as.Date(newDf$d, format = '%Y%m%d')
 #########################################
 #BFAST STUFF
-
-idIter<-1
-siteData<-newDf[which(newDf$ID == idIter),]
-
-## From 'numeric' to 'zoo' class
-x <- zoo(siteData$NDVIdiff, siteData$d)
-
-#z <- aggregate(zoo(siteData$NDVIdiff), as.Date(siteData$d), tail, 1)
-#tst<-merge(z, zoo(, time(as.ts(z))), fill = 0)
-#bfData<-merge(x, zoo(, time(as.ts(x))), fill = 0)
-
-bts <- bfastts(x, dates = time(x), type = 'irregular')
-
-bfm <- bfastmonitor(bts, start = c(2000, 1), formula = response~harmon, order = 1, plot = TRUE)
-
 #http://bendevries.ca/rgrowth/
+
+idIters<-seq(1,length(unique(newDf$ID)))
+
+for (idIter in idIters){
+  siteData<-newDf[which(newDf$ID == idIter),]
+
+  ## From 'numeric' to 'zoo' class
+  x <- zoo(siteData$NDVIdiff, siteData$d)
+  bts <- bfastts(x, dates = time(x), type = 'irregular')
+
+  bfm <- bfastmonitor(bts, start = c(1995, 1), formula = response~harmon, order = 1)
+
+  if (is.na(bfm$breakpoint) == F){
+  reg <- tsreg(x, change = bfm$breakpoint, h = 0.5)
+  #reg2 <- tsreg(x, change = bfm$breakpoint, startOffset = "floor", h = 0.5, plot = TRUE)
+  
+  reg$error_message[is.null(reg$error_message)]<-'none'
+  siteBfast<-cbind(unique(siteData[c('lon1','lon2','lat1','lat2','startDate','endDate','ID')]), data.frame(bfm[c('breakpoint','magnitude')]), data.frame(reg[c('start','disturbance','regrowth_onset','s','prereg_check','bound','error_message')]))
+  
+  if (exists('bfastOutput') == F){
+    bfastOutput <-siteBfast
+  } else {
+    bfastOutput<-rbind(bfastOutput,siteBfast)
+  }
+  }
+}
