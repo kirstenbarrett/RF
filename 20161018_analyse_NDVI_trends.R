@@ -1,15 +1,19 @@
-library(devtools)
-install_github('dutri001/bfastSpatial')
-install_github('bendv/rgrowth')
-library(rgrowth)
-require(bfast)
-require(zoo)
+##################
+#REQUIRES CSVS OF LANDSAT TRAJECTORIES FOR A POINT
+##################
 
-setwd('R:/ZAB/kb308/GEE_RF')
+#library(devtools)
+#install_github('dutri001/bfastSpatial')
+#install_github('bendv/rgrowth')
+#library(rgrowth)
+#require(bfast)
+#require(zoo)
+
+setwd('/Users/kirsten/Documents/data/ZAB_landsat_traj')
 fils<-list.files()
 
 for (fil in fils){
-	if(grep('csv',fil)>0){
+	if(length(grep('csv',fil))>0){
 	dat<-read.csv(fil)
 	filSplt<-unlist(strsplit(fil,'_'))
 	dates<-unlist(lapply(as.character(dat$system.index), function(x) unlist(strsplit(x,'_'))))
